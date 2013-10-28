@@ -96,7 +96,8 @@ class VideoUrl(formencode.validators.String):
     def _to_python(self, value, state):
         result = super(VideoUrl, self)._to_python(value, state)
 
-        if not getYoutubeMeta(state, value) and not getVimeoMeta(state, value):
+        meta  = getYoutubeMeta(state, value) or getVimeoMeta(state, value)
+        if not meta:
             raise formencode.api.Invalid(
                 self.message('notVideoUrl', state, max=self.max), value, state)
         else: return result
