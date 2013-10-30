@@ -1,8 +1,8 @@
 from BeautifulSoup import BeautifulSoup
 from babel.numbers import get_currency_symbol
 import formencode
-from hnc.forms import formfields
-from hnc.forms.formfields import StringField, TextareaField, IntField, HtmlAttrs
+from hnc.forms.formfields import StringField, TextareaField, IntField, HtmlAttrs, Field
+from hnc.tools.tools import deep_dict
 from hnc_forms_ext.media_helpers import getSlideshareMeta, getYoutubeMeta, getVimeoMeta
 
 
@@ -14,7 +14,7 @@ class CurrencyIntField(IntField):
     def getCurrencySymbol(self, request):
         return get_currency_symbol(self.getCurrency(request), locale='en_US')
 
-class PictureUploadField(formfields.StringField):
+class PictureUploadField(StringField):
     template = "hnc_forms_ext:templates/pictureupload.html"
     group_classes='file-upload-control'
     mime_types = ['image/*']
@@ -29,7 +29,7 @@ class PictureUploadField(formfields.StringField):
 class FileUploadField(PictureUploadField):
     template = "hnc_forms_ext:templates/fileupload.html"
 
-class PictureGalleryUploadField(formfields.StringField):
+class PictureGalleryUploadField(StringField):
     template = "hnc_forms_ext:templates/multifileupload.html"
     group_classes='multi-file-upload-control'
     def getValidator(self, request):
@@ -119,3 +119,21 @@ class UniqueNameField(StringField):
         attrs = HtmlAttrs(required = True, data_rule_remote=data_rule_remote, data_msg_required="Please enter a {} to proceed".format(thing_name), placeholder="Enter {} here".format(thing_name))
         super(UniqueNameField, self).__init__(name, label, attrs, **kwargs)
 
+
+
+
+class LongitudeLatitudePicker(Field):
+    latName = "latitude"
+    longName = "longitude"
+    template = "hnc_forms_ext:templates/longlatpicker.html"
+    def valueToForm(self, name, value):
+        return value.get(name, '') if value else ''
+    def get_maps_key(self, request):
+        return request.context.settings.maps_key
+    def getValidator(self, request):
+        return deep_dict(self.name,
+                            formencode.Schema(**{
+                                self.latName:formencode.validators.Number(**self.getValidatorArgs()),
+                                self.longName:formencode.validators.Number(**self.getValidatorArgs())
+                            })
+                        )

@@ -1,0 +1,2 @@
+include *.txt *.ini *.cfg *.rst
+recursive-include hnc_forms_ext *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.js *.html *.xml
